@@ -46,6 +46,12 @@
         font-style: normal;
         font-weight: 600;
       }
+      .entropy {
+        font-style: italic;
+        text-decoration-style: dashed;
+        opacity: 0.7;
+        color: var(--anchor);
+      }
     </style>
   </head>
   <body>
@@ -71,17 +77,7 @@
             <header>
               <h2>Words</h2>
               <p>
-                Pick four random
-                <a href="https://github.com/dwyl/english-words/tree/master"
-                  >English words</a
-                >
-                between 4 and 8 characters long, excluding
-                <a
-                  href="https://github.com/fergiemcdowall/stopword/blob/main/src/stopwords_eng.js"
-                  >stop words</a
-                >
-                (download the
-                <a href="./words.json" download="words.json">word list</a>)
+                Pick four random English words between 4 and 8 characters long
               </p>
             </header>
 
@@ -95,9 +91,16 @@
               <span>Capitalize a word</span>
             </label> -->
 
+            <label class="checkbox" for="pronouncableWord">
+              <input type="checkbox" id="pronouncableWord" name="pronouncableWord" checked>
+              <span>Use pronouncable words</span>
+              
+            </label>
+
             <label class="field" for="words">
               <span class="field-label">Output</span>
               <input type="text" readonly id="words" name="words" />
+              <span class="field-hint"></span>
             </label>
           </section>
 
@@ -164,8 +167,10 @@
     ></script>
 
     <script type="module">
-      // Loads words in the background to speed up page loading
-      const wordsPromise = fetch("./words.json").then((r) => r.json());
+      const words = {
+        all: fetch("./words.json").then((r) => r.json()),
+        bip39: fetch("./bip-39.json").then((r) => r.json())
+      }
 
       // Pick a random integer from 0 up-to but NOT including "length"
       function randomInteger(length) {
@@ -173,7 +178,7 @@
       }
 
       window.generateUUID = () => {
-        document.getElementById("uuid").value = crypto.randomUUID();
+        setPassword("uuid", crypto.randomUUID())
       };
       window.generateAES = async () => {
         const key = await crypto.subtle.generateKey(
@@ -183,14 +188,16 @@
         );
         const value = await crypto.subtle.exportKey("jwk", key);
 
-        document.getElementById("aes").value = value.k;
+        setPassword("aes", value.k)
       };
       window.generateWords = async () => {
-        const words = await wordsPromise;
+        const pronouncable = document.getElementById('pronouncableWord').checked
+        const corpus = await (pronouncable ? words.bip39 : words.all)
+        const entropy = Math.log2(Math.pow(corpus.length, 4))
 
         const value = [];
         for (let i = 0; i < 4; i++) {
-          value.push(words[randomInteger(words.length)]);
+          value.push(corpus[randomInteger(corpus.length)]);
         }
 
         // if (document.getElementById('capitalizeWord')?.checked) {
@@ -198,7 +205,7 @@
         value[upper] = value[upper].toUpperCase();
         // }
 
-        document.getElementById("words").value = value.join("-");
+        setPassword("words", value.join("-"), entropy)
       };
       window.copyValue = async (id) => {
         const input = document.getElementById(id);
@@ -210,10 +217,19 @@
         await new Promise((r) => setTimeout(r, 4_000));
         label.textContent = "Output";
       };
-      window.placeholder = (el) => {
-        el.placeholder = "e.g. " + el.value;
-        el.value = "";
-      };
+      window.setPassword = (id, value, entropy) => {
+        const input = document.getElementById(id)
+        input.value = value
+
+        const hint = input.parentElement.querySelector('.field-hint')
+        if (hint && entropy) {
+          hint.innerHTML = `
+            <a href="https://en.wikipedia.org/wiki/Entropy_(information_theory)" class="entropy" target="_blank">
+              entropy = ${entropy}
+            </a>
+          `
+        }
+      }
       generateUUID();
       generateAES();
       generateWords();
