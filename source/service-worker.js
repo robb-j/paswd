@@ -7,6 +7,7 @@ const assets = [
   "/icon.svg",
   "/index.html",
   "/words.json",
+  "/bip-39.json",
 
   "https://fonts.openlab.dev/rubik/rubik.css",
   "https://fonts.openlab.dev/rubik/Rubik-VariableFont_wght.woff2",
