@@ -45,12 +45,20 @@
       .field-label {
         font-style: normal;
         font-weight: 600;
+        font-variant-numeric: tabular-nums;
       }
       .entropy {
         font-style: italic;
         text-decoration-style: dashed;
         opacity: 0.7;
         color: var(--anchor);
+      }
+      label.checkbox {
+        padding-inline-start: 0;
+      }
+      input[type="range"] {
+        outline-offset: 0;
+        padding: 0;
       }
     </style>
   </head>
@@ -81,11 +89,6 @@
               </p>
             </header>
 
-            <cluster-layout space="s-1">
-              <button onclick="generateWords()">Generate</button>
-              <button onclick="copyValue('words')">Copy</button>
-            </cluster-layout>
-
             <!-- <label class="checkbox" for="capitalizeWord">
               <input type="checkbox" id="capitalizeWord" name="capitalizeWord" checked>
               <span>Capitalize a word</span>
@@ -94,8 +97,17 @@
             <label class="checkbox" for="pronouncableWord">
               <input type="checkbox" id="pronouncableWord" name="pronouncableWord" checked>
               <span>Use pronouncable words</span>
-              
             </label>
+
+            <label class="field" for="wordLength">
+              <span class="field-label">4 words</span>
+              <input type="range" id="wordLength" name="wordLength" min="1" max="10" value="4">
+            </label>
+
+            <cluster-layout space="s-1">
+              <button onclick="generateWords()">Generate</button>
+              <button onclick="copyValue('words')">Copy</button>
+            </cluster-layout>
 
             <label class="field" for="words">
               <span class="field-label">Output</span>
@@ -191,18 +203,20 @@
         setPassword("aes", value.k)
       };
       window.generateWords = async () => {
+        const length = document.getElementById('wordLength').valueAsNumber
+
         const pronouncable = document.getElementById('pronouncableWord').checked
         const corpus = await (pronouncable ? words.bip39 : words.all)
-        const entropy = Math.log2(Math.pow(corpus.length, 4))
+        const entropy = Math.log2(Math.pow(corpus.length, length))
 
         const value = [];
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < length; i++) {
           value.push(corpus[randomInteger(corpus.length)]);
         }
 
         // if (document.getElementById('capitalizeWord')?.checked) {
-        const upper = randomInteger(4);
-        value[upper] = value[upper].toUpperCase();
+        const upper = randomInteger(Math.max(length, 2));
+        if (value[upper]) value[upper] = value[upper].toUpperCase();
         // }
 
         setPassword("words", value.join("-"), entropy)
@@ -230,9 +244,21 @@
           `
         }
       }
+
+      function updateWordLength(el) {
+        const value = el.valueAsNumber
+        const elem = el.parentElement.querySelector('.field-label')
+        elem.textContent = value === 1 ? `1 word` : `${value} words`
+      }
+
       generateUUID();
       generateAES();
       generateWords();
+
+      document.getElementById('wordLength').addEventListener('input',
+        e => updateWordLength(e.target)
+      )
+      updateWordLength(document.getElementById('wordLength'))
     </script>
 
     <script type="module">
