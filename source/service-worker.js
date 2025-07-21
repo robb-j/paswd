@@ -7,6 +7,12 @@ const assets = [
   "/icon.svg",
   "/index.html",
   "/words.json",
+
+  "https://fonts.openlab.dev/rubik/rubik.css",
+  "https://fonts.openlab.dev/rubik/Rubik-VariableFont_wght.woff2",
+  "https://fonts.openlab.dev/rubik/Rubik-Italic-VariableFont_wght.woff2",
+  "https://alembic.openlab.dev/labcoat.css",
+  "https://alembic.openlab.dev/everything.js",
 ];
 
 const cacheKey = `${meta.name}-${meta.version}`;
