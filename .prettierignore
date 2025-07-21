@@ -4,4 +4,5 @@
 
 node_modules
 source/words.json
+source/bip-39.json
 .nova
