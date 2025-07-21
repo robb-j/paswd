@@ -1,5 +1,13 @@
 import meta from "./app.json" with { type: "json" };
-const assets = ["/", "/index.html", "/words.json", "/app.json", "/icon.svg"];
+const assets = [
+  "/",
+  "/app.json",
+  "/icon-192.png",
+  "/icon-512.png",
+  "/icon.svg",
+  "/index.html",
+  "/words.json",
+];
 
 const cacheKey = `${meta.name}-${meta.version}`;
 
