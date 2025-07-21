@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Password Generator</title>
+    <link rel="stylesheet" href="https://fonts.openlab.dev/rubik/rubik.css" />
+    <link rel="stylesheet" href="https://alembic.openlab.dev/labcoat.css" />
+    <meta name="theme-color" content="#49D49D" />
+    <link rel="icon" href="icon.svg" />
+    <meta
+      name="description"
+      content="Quickly generate secure passwords in your browser with no dodgy stuff"
+    />
+    <link rel="manifest" href="app.webmanifest" />
+    <style>
+      :root {
+        --theme: #49d49d;
+        --focus: #b248d4;
+        --anchor: #d45f48;
+        --font-main: "Rubik var", Rubik, Inter, system-ui, sans-serif;
+      }
+      input[readonly] {
+        border-color: var(--border);
+        border-style: dashed;
+      }
+      body > header {
+        background: var(--theme) !important;
+        padding: 0.5em;
+        font-weight: bold;
+        line-height: 1;
+        color: #242729;
+      }
+      button {
+        appearance: none;
+        padding: var(--s-5) var(--s0);
+        margin: 0;
+        border: var(--border-thin) solid black;
+        box-shadow: 3px 3px black;
+        background-color: #69ebd0;
+        font-family: var(--font-mono);
+        color: black;
+        font-weight: bold;
+      }
+      .field-label {
+        font-style: normal;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <header>Password Generator</header>
+
+    <main>
+      <center-layout>
+        <stack-layout space="s3">
+          <section>
+            <h1>Generate passwords</h1>
+            <p>
+              This page has a few tools for generating passwords using different
+              strategies. No trackers, adverts, KPIs or metrics. A simple HTML,
+              CSS and JavaScript website with useful tools.
+            </p>
+          </section>
+
+          <!-- 
+            WORDS
+           -->
+
+          <section class="flow">
+            <header>
+              <h2>Words</h2>
+              <p>
+                Pick four random
+                <a href="https://github.com/dwyl/english-words/tree/master"
+                  >English words</a
+                >
+                between 4 and 8 characters long, excluding
+                <a
+                  href="https://github.com/fergiemcdowall/stopword/blob/main/src/stopwords_eng.js"
+                  >stop words</a
+                >
+                (download the
+                <a href="./words.json" download="words.json">word list</a>)
+              </p>
+            </header>
+
+            <cluster-layout space="s-1">
+              <button onclick="generateWords()">Generate</button>
+              <button onclick="copyValue('words')">Copy</button>
+            </cluster-layout>
+
+            <!-- <label class="checkbox" for="capitalizeWord">
+              <input type="checkbox" id="capitalizeWord" name="capitalizeWord" checked>
+              <span>Capitalize a word</span>
+            </label> -->
+
+            <label class="field" for="words">
+              <span class="field-label">Output</span>
+              <input type="text" readonly id="words" name="words" />
+            </label>
+          </section>
+
+          <!--
+            UUID
+           -->
+
+          <section class="flow">
+            <header>
+              <h2>UUID</h2>
+              <p>Use <code>crypto.randomUUID()</code> to generate a secret</p>
+            </header>
+
+            <cluster-layout space="s-1">
+              <button onclick="generateUUID()">Generate</button>
+              <button onclick="copyValue('uuid')">Copy</button>
+            </cluster-layout>
+
+            <label class="field" for="uuid">
+              <span class="field-label">Output</span>
+              <input type="text" readonly id="uuid" name="uuid" />
+            </label>
+          </section>
+
+          <!-- 
+            AES
+           -->
+
+          <section class="flow">
+            <header>
+              <h2>AES-GCM</h2>
+              <p>
+                Use <code>crypto.subtle.generateKey()</code> to generate and
+                export an <code>AES-GCM</code> key then use the
+                <code>k</code> component of the JWK
+              </p>
+            </header>
+
+            <cluster-layout space="s-1">
+              <button onclick="generateAES()">Generate</button>
+              <button onclick="copyValue('aes')">Copy</button>
+            </cluster-layout>
+
+            <label class="field" for="aes">
+              <span class="field-label">Output</span>
+              <input type="text" readonly id="aes" name="aes" />
+            </label>
+          </section>
+        </stack-layout>
+      </center-layout>
+    </main>
+
+    <footer>
+      Made by <a href="https://www.r0b.io">Rob</a> <span id="meta"></span>
+    </footer>
+
+    <script
+      type="module"
+      src="https://alembic.openlab.dev/everything.js"
+    ></script>
+
+    <script type="module">
+      // Loads words in the background to speed up page loading
+      const wordsPromise = fetch("./words.json").then((r) => r.json());
+
+      // Pick a random integer from 0 up-to but NOT including "length"
+      function randomInteger(length) {
+        return crypto.getRandomValues(new Uint32Array(1))[0] % length;
+      }
+
+      window.generateUUID = () => {
+        document.getElementById("uuid").value = crypto.randomUUID();
+      };
+      window.generateAES = async () => {
+        const key = await crypto.subtle.generateKey(
+          { name: "AES-GCM", length: 256 },
+          true,
+          ["encrypt", "decrypt"],
+        );
+        const value = await crypto.subtle.exportKey("jwk", key);
+
+        document.getElementById("aes").value = value.k;
+      };
+      window.generateWords = async () => {
+        const words = await wordsPromise;
+
+        const value = [];
+        for (let i = 0; i < 4; i++) {
+          value.push(words[randomInteger(words.length)]);
+        }
+
+        // if (document.getElementById('capitalizeWord')?.checked) {
+        const upper = randomInteger(4);
+        value[upper] = value[upper].toUpperCase();
+        // }
+
+        document.getElementById("words").value = value.join("-");
+      };
+      window.copyValue = async (id) => {
+        const input = document.getElementById(id);
+        await navigator.clipboard.write([
+          new ClipboardItem({ "text/plain": input.value }),
+        ]);
+        const label = input.parentElement.querySelector(".field-label");
+        label.textContent = "Output (copied)";
+        await new Promise((r) => setTimeout(r, 4_000));
+        label.textContent = "Output";
+      };
+      window.placeholder = (el) => {
+        el.placeholder = "e.g. " + el.value;
+        el.value = "";
+      };
+      generateUUID();
+      generateAES();
+      generateWords();
+    </script>
+
+    <script type="module">
+      import meta from "./app.json" with { type: "json" };
+
+      // Put the version in the footer
+      const metaElement = document.querySelector("#meta");
+      if (metaElement) metaElement.textContent = "v" + meta.version;
+
+      // Register the service worker
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker
+          .register("service-worker.js", { scope: "/", type: "module" })
+          .catch((error) =>
+            console.error("Failed to register ServiceWorker", error),
+          );
+      }
+    </script>
+  </body>
+</html>

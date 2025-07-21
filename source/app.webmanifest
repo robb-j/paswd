@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json.schemastore.org/web-manifest.json",
+  "name": "Password Generator",
+  "short_name": "PASWD",
+  "start_url": ".",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#49D49D",
+  "icons": [
+    { "src": "icon-512.png", "type": "image/png", "sizes": "512x512" },
+    { "src": "icon-192.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "icon.svg", "type": "image/svg+xml", "sizes": "any" }
+  ]
+}
