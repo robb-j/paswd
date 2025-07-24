@@ -207,7 +207,7 @@
 
         const pronouncable = document.getElementById('pronouncableWord').checked
         const corpus = await (pronouncable ? words.bip39 : words.all)
-        const entropy = Math.log2(Math.pow(corpus.length, length))
+        const entropy = Math.log2(Math.pow(corpus.length, length * length))
 
         const value = [];
         for (let i = 0; i < length; i++) {
@@ -239,7 +239,7 @@
         if (hint && entropy) {
           hint.innerHTML = `
             <a href="https://en.wikipedia.org/wiki/Entropy_(information_theory)" class="entropy" target="_blank">
-              entropy = ${entropy}
+              ${entropy} bits of entropy
             </a>
           `
         }
