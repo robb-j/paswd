@@ -207,7 +207,7 @@
 
         const pronouncable = document.getElementById('pronouncableWord').checked
         const corpus = await (pronouncable ? words.bip39 : words.all)
-        const entropy = Math.log2(Math.pow(corpus.length, length * length))
+        const entropy = Math.log2(Math.pow(corpus.length, length)  * length)
 
         const value = [];
         for (let i = 0; i < length; i++) {
